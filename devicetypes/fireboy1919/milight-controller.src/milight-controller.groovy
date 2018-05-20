@@ -27,6 +27,7 @@ metadata {
         command "pair"
         command "unpair"
         command "whiten"
+	command "nighten"
 	}
     
     preferences {       
@@ -66,6 +67,10 @@ metadata {
 
         standardTile("white", "device.switch", width: 2, height: 2, canChangeIcon: true) {
            state "default", label:"White", defaultState: true, action: "whiten", icon: "st.switches.switch.off"
+        }
+	
+	standardTile("night", "device.switch", width: 2, height: 2, canChangeIcon: true) {
+           state "default", label:"Night", defaultState: true, action: "nighten", icon: "st.switches.switch.off"
         }
 
 		main(["switch"])
@@ -117,6 +122,10 @@ def whiten() {
    sendEvent(name: "whiten", value: java.util.UUID.randomUUID().toString())    
 }
 
+def nighten() {
+   sendEvent(name: "nighten", value: java.util.UUID.randomUUID().toString())    
+}
+
 def unknown() {
     sendEvent(name: "switch", value: "unknown")
 }
@@ -151,7 +160,8 @@ def httpCall(body, ipAddress, code, group) {
     def ipAddress = getPreferences()['ipAddress']
     def group = getPreferences()['group']
     */
-    def path =  "/gateways/$code/rgbw/$group"
+    hexcode = convertToHex(code)
+    def path =  "/gateways/$hexcode/rgbw/$group"
     def bodyString = groovy.json.JsonOutput.toJson(body)
     def ipAddressHex = convertIPtoHex(ipAddress)
     def port = convertToHex(80);
