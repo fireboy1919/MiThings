@@ -35,8 +35,9 @@ def nameMiLights() {
 	dynamicPage(name: "nameMiLights", title: "MiLight Wifi Hub Setup", uninstall: true, install: true) {
         section("Light") {
             input "miLightName", "text", title: "Light name", description: "i.e. Living Room", required: true, submitOnChange: false
-            input "code", "number", title: "Code", required: true, description: "Optional: will be autoassigned"
+            input "code", "number", title: "Code", required: false, description: "Optional: will be autoassigned"
             input "lightType", "enum", title: "Bulb Type", required: true, options: ['rgbw', 'cct', 'rgb_cct'], defaultValue: 'rgbw'
+	    input "group", "number", title: "The group you wish to control (0-4), 0 = all", required: true, defaultValue: "1"
         }
 	}
 }
@@ -81,7 +82,7 @@ def initialize() {
     if(settings.code == null) {
     	settings.code = parent.parent.incLights();
     }
-    myDevice.setPreferences(["code": settings.code, "group":1, "lightType": settings.lightType ])
+    myDevice.setPreferences(["code": settings.code, "group": settings.group, "lightType": settings.lightType ])
     
     subscribe(myDevice, "switch.on", switchOnHandler)
     subscribe(myDevice, "switch.off", switchOffHandler)
@@ -91,6 +92,7 @@ def initialize() {
     subscribe(myDevice, "pair", pairHandler)
     subscribe(myDevice, "unpair", unpairHandler)
     subscribe(myDevice, "whiten", whitenHandler)
+    subscribe(myDevice, "nighten", nightenHandler)
     
     log.debug("Subscribed")
     //subscribeToCommand(myDevice, "refresh", switchRefreshHandler)
@@ -126,6 +128,11 @@ def unpairHandler(evt) {
 
 def whitenHandler(evt) {
 	def body = ["command": "set_white"]
+     httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+}
+
+def nightenHandler(evt) {
+	def body = ["command": "night_mode"]
      httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 }
 
