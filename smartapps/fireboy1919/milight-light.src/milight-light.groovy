@@ -153,7 +153,7 @@ def switchOnHandler(evt) {
 def switchOffHandler(evt) {
     def body = ["status": "off"]
 
-	if(parent.parent.settings.isDebug) { log.debug "switch off! ${settings.code} / ${evt.device.name}" }
+    if(parent.parent.settings.isDebug) { log.debug "switch off! ${settings.code} / ${evt.device.name}" }
     /* getPrimaryDevice().httpCall(["status": "off"], settings.ipAddress, settings.code,
         evt.device.getPreferences()["group"]) */
 
@@ -176,9 +176,14 @@ def switchColorHandler(evt) {
     def body = ["hue": val.toString() ]
 
 	if(parent.parent.settings.isDebug) { log.debug "color set! ${settings.code} / ${evt.device.name} / ${evt.value}" }
-         
-    httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
-
+    if(val == 0)
+    {
+    	whitenHandler(evt)
+    }
+    else 
+    {
+        httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+    }     
 }
 
 def httpCall(body, ipAddress, code, device) {
