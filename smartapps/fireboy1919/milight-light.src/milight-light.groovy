@@ -2,6 +2,8 @@
  *  MiLight / EasyBulb / LimitlessLED Light Controller
  *
  *  Copyright 2017  Rusty Phillips rusty dot phillips at gmail dot com
+ *  v1.1 origional by fireboy1919
+ *  v1.2 update to include night mode 
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -91,6 +93,7 @@ def initialize() {
     subscribe(myDevice, "pair", pairHandler)
     subscribe(myDevice, "unpair", unpairHandler)
     subscribe(myDevice, "whiten", whitenHandler)
+    subscribe(myDevice, "nightmode", nightHandler)
     
     log.debug("Subscribed")
     //subscribeToCommand(myDevice, "refresh", switchRefreshHandler)
@@ -117,21 +120,32 @@ def pairHandler(evt) {
 
 }
 def unpairHandler(evt) {
-    def body = ["command":"unpair"]
+	def body = ["command":"unpair"]
 
 	//if(parent.parent.settings.isDebug) { log.debug "unpaired! ${settings.code} / ${evt.device.name}" }
-    httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 
 }
 
 def whitenHandler(evt) {
 	def body = ["command": "set_white"]
-     httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+	//if(parent.parent.settings.isDebug) { log.debug "nightmode! ${settings.code} / ${evt.device.name}" }
+	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+
+	log.debug("httpcall set white")
+}
+
+def nightHandler(evt) {
+	def body = ["command": "night_mode"]
+	//if(parent.parent.settings.isDebug) { log.debug "nightmode! ${settings.code} / ${evt.device.name}" }
+	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+     
+	log.debug("httpcall night mode")
 }
 
 def switchOnHandler(evt) {
     def body = ["status": "on"]
-	//if(parent.parent.settings.isDebug) { log.debug "master switch on! ${settings.code} / ${evt.device.name}" }
+     //if(parent.parent.settings.isDebug) { log.debug "master switch on! ${settings.code} / ${evt.device.name}" }
     
      httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 }
