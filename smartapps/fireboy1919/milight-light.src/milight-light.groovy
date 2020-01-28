@@ -2,8 +2,6 @@
  *  MiLight / EasyBulb / LimitlessLED Light Controller
  *
  *  Copyright 2017  Rusty Phillips rusty dot phillips at gmail dot com
- *  v1.1 origional by fireboy1919
- *  v1.2 update to include night mode 
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -37,7 +35,7 @@ def nameMiLights() {
 	dynamicPage(name: "nameMiLights", title: "MiLight Wifi Hub Setup", uninstall: true, install: true) {
         section("Light") {
             input "miLightName", "text", title: "Light name", description: "i.e. Living Room", required: true, submitOnChange: false
-            input "code", "number", title: "Code", required: true, description: "Optional: will be autoassigned"
+            input "code", "number", title: "Code", required: true, description: "Group Value"
             input "lightType", "enum", title: "Bulb Type", required: true, options: ['rgbw', 'cct', 'rgb_cct'], defaultValue: 'rgbw'
         }
 	}
@@ -93,7 +91,6 @@ def initialize() {
     subscribe(myDevice, "pair", pairHandler)
     subscribe(myDevice, "unpair", unpairHandler)
     subscribe(myDevice, "whiten", whitenHandler)
-    subscribe(myDevice, "nightmode", nightHandler)
     
     log.debug("Subscribed")
     //subscribeToCommand(myDevice, "refresh", switchRefreshHandler)
@@ -120,32 +117,21 @@ def pairHandler(evt) {
 
 }
 def unpairHandler(evt) {
-	def body = ["command":"unpair"]
+    def body = ["command":"unpair"]
 
 	//if(parent.parent.settings.isDebug) { log.debug "unpaired! ${settings.code} / ${evt.device.name}" }
-	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+    httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 
 }
 
 def whitenHandler(evt) {
 	def body = ["command": "set_white"]
-	//if(parent.parent.settings.isDebug) { log.debug "nightmode! ${settings.code} / ${evt.device.name}" }
-	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
-
-	log.debug("httpcall set white")
-}
-
-def nightHandler(evt) {
-	def body = ["command": "night_mode"]
-	//if(parent.parent.settings.isDebug) { log.debug "nightmode! ${settings.code} / ${evt.device.name}" }
-	httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
-     
-	log.debug("httpcall night mode")
+     httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 }
 
 def switchOnHandler(evt) {
     def body = ["status": "on"]
-     //if(parent.parent.settings.isDebug) { log.debug "master switch on! ${settings.code} / ${evt.device.name}" }
+	//if(parent.parent.settings.isDebug) { log.debug "master switch on! ${settings.code} / ${evt.device.name}" }
     
      httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 }
@@ -153,7 +139,7 @@ def switchOnHandler(evt) {
 def switchOffHandler(evt) {
     def body = ["status": "off"]
 
-    if(parent.parent.settings.isDebug) { log.debug "switch off! ${settings.code} / ${evt.device.name}" }
+	if(parent.parent.settings.isDebug) { log.debug "switch off! ${settings.code} / ${evt.device.name}" }
     /* getPrimaryDevice().httpCall(["status": "off"], settings.ipAddress, settings.code,
         evt.device.getPreferences()["group"]) */
 
@@ -171,19 +157,12 @@ def switchLevelHandler(evt) {
 
 def switchColorHandler(evt) {
 	// Adapted from HA Bridge.
-    log.debug("Hue: " + evt.value)
-    def val = (int)((360 + Math.floor((Float.parseFloat(evt.value) / 100)* 360)) % 360)
-    def body = ["hue": val.toString() ]
-
+    //  log.debug(evt.value["saturation"])
+    //def hue = (int)((360 + Math.floor((Float.parseFloat(parseResult.hue) / 100)* 360)) % 360)
+    def body = ["color": evt.value ]
+    
 	if(parent.parent.settings.isDebug) { log.debug "color set! ${settings.code} / ${evt.device.name} / ${evt.value}" }
-    if(val == 0)
-    {
-    	whitenHandler(evt)
-    }
-    else 
-    {
-        httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
-    }     
+    httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
 }
 
 def httpCall(body, ipAddress, code, device) {
