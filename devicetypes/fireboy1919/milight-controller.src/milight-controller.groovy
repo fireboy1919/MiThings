@@ -1,9 +1,7 @@
 /**
  *  MiLight / EasyBulb / LimitlessLED Light Controller
  *
- *  Copyright 2017  Rusty Phillips rusty dot phillips at gmail dot com
- *  v1.1 origional by fireboy1919
- *  v1.2 update to include night mode
+ *  Copyright 2015 Jared Jensen / jared /at/ cloudsy /dot/ com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -29,7 +27,6 @@ metadata {
         command "pair"
         command "unpair"
         command "whiten"
-        command "nightmode"
 	}
     
     preferences {       
@@ -71,13 +68,8 @@ metadata {
            state "default", label:"White", defaultState: true, action: "whiten", icon: "st.switches.switch.off"
         }
 
-	standardTile("night", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-           state "default", label:"Night", defaultState: true, action: "nightmode", icon: "st.switches.switch.off"
-        }
-
-		
-	main(["switch"])
-		details(["switch","levelSliderControl", "rgbSelector", "refresh", "pair", "unpair", "white", "night"])
+		main(["switch"])
+		details(["switch","levelSliderControl", "rgbSelector", "refresh", "pair", "unpair", "white"])
 	} 
 }
 
@@ -105,8 +97,12 @@ def setLevel(percentage, boolean sendHttp = true) {
 }
 
 def setColor(value, boolean sendHttp = true) { 
-    	def h = value.hue
-        sendEvent(name: 'color', value: h, data: [sendReq: sendHttp])
+    if(value.red == 255 && value.green == 255 && value.blue == 255) {
+    	whiten()
+    }
+    else {
+    	sendEvent(name: 'color', value: value.red + "," + value.green + "," + value.blue, data: [sendReq: sendHttp])
+    }
 	return sendEvent(name: 'switch', value: "on", data: [sendReq: sendHttp])
 }
 
@@ -122,13 +118,7 @@ def unpair() {
 }
 
 def whiten() {
-   sendEvent(name: "whiten", value: java.util.UUID.randomUUID().toString())   
-   log.debug("Sent whiten")
-}
-
-def nightmode() {
-   sendEvent(name: "nightmode", value: java.util.UUID.randomUUID().toString())
-   log.debug("Sent nightmode")
+   sendEvent(name: "whiten", value: java.util.UUID.randomUUID().toString())    
 }
 
 def unknown() {
