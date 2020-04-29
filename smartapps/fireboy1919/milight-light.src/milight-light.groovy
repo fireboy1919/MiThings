@@ -1,5 +1,7 @@
 /**
  *  MiLight / EasyBulb / LimitlessLED Light Controller
+ *  v1.1 working version by fireboy
+ *  v1.2 update with night light mode
  *
  *  Copyright 2017  Rusty Phillips rusty dot phillips at gmail dot com
  *
@@ -91,6 +93,7 @@ def initialize() {
     subscribe(myDevice, "pair", pairHandler)
     subscribe(myDevice, "unpair", unpairHandler)
     subscribe(myDevice, "whiten", whitenHandler)
+    subscribe(myDevice, "nightmode", nightHandler)
     
     log.debug("Subscribed")
     //subscribeToCommand(myDevice, "refresh", switchRefreshHandler)
@@ -127,6 +130,14 @@ def unpairHandler(evt) {
 def whitenHandler(evt) {
 	def body = ["command": "set_white"]
      httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+}
+
+def nightHandler(evt) {
+	def body = ["command": "night_mode"]
+     //if(parent.parent.settings.isDebug) { log.debug "nightmode! ${settings.code} / ${evt.device.name}" }
+     httpCall(body, parent.settings.ipAddress, settings.code, evt.device)
+     
+     log.debug("httpcall night mode")
 }
 
 def switchOnHandler(evt) {
